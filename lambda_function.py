@@ -38,6 +38,9 @@ class Users(db.Model):
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'Authentication is healthy'}), 200
 
 @app.route('/signup', methods=['POST'])
 def signup():
