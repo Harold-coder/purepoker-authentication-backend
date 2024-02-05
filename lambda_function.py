@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
-import uuid  # for unique user id
 # from config import username, password, endpoint, secretKey
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
