@@ -129,7 +129,7 @@ def is_valid_token(auth_cookie):
 #     app.run(debug=True, host='0.0.0.0', port=8013, use_reloader=False)
 
 def lambda_handler(event, context):
-    print("Here we go!!")
+    print("Here we go!")
     response = awsgi.response(app, event, context)
 
     # Check if the headers exist in the event and set the origin accordingly
