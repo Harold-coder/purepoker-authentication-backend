@@ -83,22 +83,30 @@ def signup():
     response.set_cookie('pure-poker-token', token, expires=expires, httponly=True, path='/', secure=True, samesite='None')
     return response
 
-# User Login
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
     user = Users.query.filter_by(username=data['username']).first()
     if user and check_password_hash(user.password, data['password']):
+        # Token expiration time
         expires = datetime.utcnow() + timedelta(hours=24) 
         token = jwt.encode({
             'username': user.username,
             'email': user.email,
             'exp': expires 
-        }, app.config['SECRET_KEY'], algorithm="HS256")
-        response = make_response(jsonify({'message': 'Login successful'}), 200)
+        }, app.config['SECRET_KEY'], algorithm="HS256").decode('utf-8')
+        
+        user_data = {
+            'username': user.username,
+            'email': user.email,
+        }
+        
+        # Make sure to use secure=True in production for HTTPS
+        response = make_response(jsonify({'user': user_data, 'message': 'Login successful'}), 200)
         response.set_cookie('pure-poker-token', token, expires=expires, httponly=True, path='/', secure=True, samesite='None')
         return response
-    return jsonify({'message': 'Invalid credentials'}), 401
+    else:
+        return jsonify({'message': 'Invalid credentials'}), 401
 
 # User Logout
 @app.route('/logout', methods=['POST'])
