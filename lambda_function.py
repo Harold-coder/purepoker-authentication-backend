@@ -79,7 +79,7 @@ def signup():
     }, app.config['SECRET_KEY'], algorithm="HS256")
 
     response = make_response(jsonify({'message': 'Registration successful'}), 200)
-    response.set_cookie('pure-poker-token', token, httponly=True, secure=True)  # Use secure=True for production
+    response.set_cookie('pure-poker-token', token, httponly=True, path='/', secure=True, samesite='None')
     return response
 
 # User Login
@@ -94,7 +94,7 @@ def login():
             'exp': datetime.utcnow() + timedelta(hours=24)  # Corrected
         }, app.config['SECRET_KEY'], algorithm="HS256")
         response = make_response(jsonify({'message': 'Login successful'}), 200)
-        response.set_cookie('pure-poker-token', token, httponly=True, secure=True)
+        response.set_cookie('pure-poker-token', token, httponly=True, path='/', secure=True, samesite='None')
         return response
     return jsonify({'message': 'Invalid credentials'}), 401
 
