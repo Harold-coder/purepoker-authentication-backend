@@ -94,7 +94,7 @@ def login():
             'username': user.username,
             'email': user.email,
             'exp': expires 
-        }, app.config['SECRET_KEY'], algorithm="HS256").decode('utf-8')
+        }, app.config['SECRET_KEY'], algorithm="HS256")
         
         user_data = {
             'username': user.username,
