@@ -10,7 +10,9 @@ from datetime import datetime, timedelta
 
 # Initialize Flask and SQLAlchemy
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {"origins": ["https://purepoker.world"], "supports_credentials": True}
+}, allow_headers=["Content-Type", "Authorization", "X-Api-Key", "x-access-tokens"])
 
 username = os.getenv('username')
 password = os.getenv('password')
@@ -25,7 +27,6 @@ db = SQLAlchemy(app)
 # Wrap db.create_all in an application context
 with app.app_context():
     db.create_all()
-
 
 # User Model
 class Users(db.Model):
@@ -116,8 +117,11 @@ def is_valid_token(auth_cookie):
     try:
         # Decode the token
         data = jwt.decode(auth_cookie, app.config['SECRET_KEY'], algorithms=["HS256"])
+        # Convert current UTC time to a Unix timestamp
+        current_time = datetime.utcnow()
+        current_timestamp = int(current_time.timestamp())
         # Check if the token has expired
-        if data['exp'] < datetime.utcnow() + timedelta(hours=24):
+        if data['exp'] < current_timestamp:
             return False
         return True
     except jwt.ExpiredSignatureError:
