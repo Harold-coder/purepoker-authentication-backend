@@ -122,7 +122,7 @@ def validate_token():
         return jsonify({'message': 'No token provided'}), 401
     
     try:
-        data = jwt.decode(auth_cookie, os.getenv('SECRET_KEY'), algorithms=["HS256"])
+        data = jwt.decode(auth_cookie, app.config['SECRET_KEY'], algorithms=["HS256"])
         current_timestamp = datetime.utcnow().timestamp()
         if data['exp'] < current_timestamp:
             return jsonify({'message': 'Token has expired'}), 401
