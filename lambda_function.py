@@ -72,14 +72,15 @@ def signup():
         db.session.rollback()
         return jsonify({'message': 'An error occured, please try another email or username', 'error': str(e)}), 500
 
+    expires = datetime.utcnow() + timedelta(hours=24)
     token = jwt.encode({
         'username': new_user.username,
         'email': new_user.email,
-        'exp': datetime.utcnow() + timedelta(hours=24)  # Corrected
+        'exp': expires
     }, app.config['SECRET_KEY'], algorithm="HS256")
 
     response = make_response(jsonify({'message': 'Registration successful'}), 200)
-    response.set_cookie('pure-poker-token', token, httponly=True, path='/', secure=True, samesite='None')
+    response.set_cookie('pure-poker-token', token, expires=expires, httponly=True, path='/', secure=True, samesite='None')
     return response
 
 # User Login
@@ -88,13 +89,14 @@ def login():
     data = request.json
     user = Users.query.filter_by(username=data['username']).first()
     if user and check_password_hash(user.password, data['password']):
+        expires = datetime.utcnow() + timedelta(hours=24) 
         token = jwt.encode({
             'username': user.username,
             'email': user.email,
-            'exp': datetime.utcnow() + timedelta(hours=24)  # Corrected
+            'exp': expires 
         }, app.config['SECRET_KEY'], algorithm="HS256")
         response = make_response(jsonify({'message': 'Login successful'}), 200)
-        response.set_cookie('pure-poker-token', token, httponly=True, path='/', secure=True, samesite='None')
+        response.set_cookie('pure-poker-token', token, expires=expires, httponly=True, path='/', secure=True, samesite='None')
         return response
     return jsonify({'message': 'Invalid credentials'}), 401
 
