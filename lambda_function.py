@@ -115,13 +115,25 @@ def logout():
     response.set_cookie('pure-poker-token', '', expires=0)
     return response
 
-@app.route('/validate_token', methods=['POST'])
+@app.route('/validate_token', methods=['GET'])  # Using GET as we're not posting data
 def validate_token():
     auth_cookie = request.cookies.get('pure-poker-token')
-    if auth_cookie and is_valid_token(auth_cookie):
-        return jsonify({'message': 'Token is valid'}), 200
-    else:
-        return jsonify({'message': 'Token is invalid'}), 401
+    if not auth_cookie:
+        return jsonify({'message': 'No token provided'}), 401
+    
+    try:
+        data = jwt.decode(auth_cookie, os.getenv('SECRET_KEY'), algorithms=["HS256"])
+        current_timestamp = datetime.utcnow().timestamp()
+        if data['exp'] < current_timestamp:
+            return jsonify({'message': 'Token has expired'}), 401
+        
+        # Assuming you have a method to fetch user details by username
+        user = get_user_details(data['username'])  # Implement this function based on your user model
+        return jsonify({'user': user}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token'}), 401
 
 def is_valid_token(auth_cookie):
     try:
@@ -140,6 +152,18 @@ def is_valid_token(auth_cookie):
     except jwt.InvalidTokenError:
         # Token is invalid
         return False
+
+def get_user_details(username):
+    user = Users.query.filter_by(username=username).first()
+    if user:
+        return {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email
+            # Add any other fields you want to include
+        }
+    return None
+
 
 # if __name__ == '__main__':
 #     app.run(debug=True, host='0.0.0.0', port=8013, use_reloader=False)
